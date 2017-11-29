@@ -537,8 +537,9 @@ procdump(void)
  * Therefore, file discriptor should be shared 
  * And append new stack on the original stack in address space 
  * */
-void
-clone(void)//BR
+int 
+clone(int size)//BR
 {
-    cprintf("this is clone\n");	
+    cprintf("this is clone %d\n",size);
+    return 0;	
 }
