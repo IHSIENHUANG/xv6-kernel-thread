@@ -89,3 +89,9 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+int 
+sys_clone(void)
+{
+	clone();
+	return 0 ;
+}

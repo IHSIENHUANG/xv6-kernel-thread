@@ -532,3 +532,13 @@ procdump(void)
     cprintf("\n");
   }
 }
+/* clone
+ * clone a new thread sharing the same address space with their parents insead of duplicate it
+ * Therefore, file discriptor should be shared 
+ * And append new stack on the original stack in address space 
+ * */
+void
+clone(void)//BR
+{
+    cprintf("this is clone\n");	
+}
