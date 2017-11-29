@@ -92,6 +92,8 @@ sys_uptime(void)
 int 
 sys_clone(void)
 {
-	clone();
-	return 0 ;
+	int size;
+	if(argint(0,&size)<0)
+		return -1;
+	return clone(size);
 }
