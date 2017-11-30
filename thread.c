@@ -24,4 +24,7 @@ void lock_release(lock_t *lock)
 {
 	xchg(&lock->locked,0);
 }
+void thread_create()
+{
 
+}
