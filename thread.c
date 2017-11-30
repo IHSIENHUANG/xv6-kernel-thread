@@ -24,7 +24,16 @@ void lock_release(lock_t *lock)
 {
 	xchg(&lock->locked,0);
 }
-void thread_create()
+/*
+ *start_routine can receive a funtion 
+ * */
+void thread_create(void(*start_routine)(void*), void *arg))
+{
+	
+
+
+}
+void thread_join()
 {
 
 }
