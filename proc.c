@@ -538,8 +538,9 @@ procdump(void)
  * And append new stack on the original stack in address space 
  * */
 int 
-clone(int size)//BR
+clone(void* stack,int size)//BR
 {
+    cprintf("stack %d\n",stack);
     cprintf("this is clone %d\n",size);
     return 0;	
 }

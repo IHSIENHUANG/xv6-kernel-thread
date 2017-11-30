@@ -4,8 +4,14 @@
 int main ( int argc , char * argv [])
 {
 	int size = 4096;
-	int child_pid = clone(size);
-	if(child_pid ==1)
-		child_pid = clone(size);
+
+	int i = 0 ;
+	for(i = 0 ; i < 5; i ++)
+	{	
+		int* stack = (int*)malloc(size*sizeof(int));
+		int child_pid = clone(stack,size);
+		if(child_pid ==1)
+			child_pid = clone(stack,size);	
+	}
 	exit ();
 }

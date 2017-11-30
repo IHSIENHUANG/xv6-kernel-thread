@@ -93,7 +93,10 @@ int
 sys_clone(void)
 {
 	int size;
-	if(argint(0,&size)<0)
+	void *stack;
+	if(argint(1,&size)<0)//the second argument
 		return -1;
-	return clone(size);
+	if(argptr(0,(char **)&stack,size)<0)//the argptr expect char**
+		return -1;
+	return clone(stack,size);
 }
