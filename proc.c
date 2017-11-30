@@ -540,7 +540,42 @@ procdump(void)
 int 
 clone(void* stack,int size)//BR
 {
-    cprintf("stack %d\n",stack);
+    cprintf("stack %d\n",stack);//original place
     cprintf("this is clone %d\n",size);
-    return 0;	
+    int i,pid;
+    struct proc *newp;//new process and in here is new thread
+    if((newp=allocproc())==0) 
+	return -1;
+    struct proc *curproc = myproc();
+    newp -> pgdir = curproc ->pgdir;
+    newp -> sz  = curproc ->sz; // size of process 
+    newp -> parent = curproc;//parent will be original process
+    *newp -> tf = *curproc -> tf;
+    newp -> thread = 1;
+    newp -> tf -> eax = 0 ;// fork in child will retunr 0 
+    /*
+ *in stack esp is the top of stack ebp is the down of the stack 
+  but in memory address, stack grows from top to down
+ * */
+    void *down_copy = (void*)curproc->tf->ebp +16;
+    void *top_copy = (void*)curproc->tf->esp;
+    uint copysize = (uint)(down_copy - top_copy);
+    newp->tf->esp = (uint) (stack - copysize);
+    newp->tf->ebp = (uint) (stack -16);
+
+    memmove(stack-copysize,top_copy,copysize);
+    for(i=0;i<NOFILE;i++)
+    {
+	if(curproc->ofile[i])
+		newp->ofile[i]=filedup(curproc->ofile[i]);
+    }    
+    newp->cwd = idup(curproc->cwd);
+    pid = newp->pid;
+    newp->state = RUNNABLE;
+    safestrcpy(newp->name, curproc->name, sizeof(curproc->name));
+    cprintf("In clone function this is a pid %d\n",pid);
+    return pid;
+
+    
+    	
 }
