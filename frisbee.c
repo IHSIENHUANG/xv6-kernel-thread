@@ -8,7 +8,7 @@ int main ( int argc , char * argv [])
 	int size = 4096;
 	int* stack[3];
 	int i = 0 ;
-	printf(1,"@@@@@@@@ %d\n",PGSIZE);
+	printf(1,"@@@@@@@@ %d\n",getpid);
 	for(i=0;i<3;i++)
 	{
 		stack[i]  = (int*)malloc(size*sizeof(int));
@@ -18,11 +18,11 @@ int main ( int argc , char * argv [])
 	{
 		child_pid = clone(stack[1],size);
 	}
-	if(child_pid !=0)
-		printf(1,"@@%d\n",child_pid);
+	if(child_pid >0)
+		printf(1,"parent's pid num is %d\n",getpid());
 	if(child_pid ==0)
-		printf(1,"this is child%d\n",child_pid);
-	
+		printf(1,"child's pid num is %d\n",getpid());
+
 	wait();
 	wait();
 	exit ();

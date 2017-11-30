@@ -89,7 +89,7 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
-int 
+int//BR 
 sys_clone(void)
 {
 	int size;
