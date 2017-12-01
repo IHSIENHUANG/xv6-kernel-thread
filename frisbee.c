@@ -2,12 +2,16 @@
 #include "stat.h"
 #include "user.h"
 #include "thread.h"
+struct lock_t *lock;
 int main ( int argc , char * argv [])
 {
 	
 	int size = 4096;
 	int* stack[3];
 	int i = 0 ;
+	
+	//struct lock_t *testlock;
+	//testlock->locked =1;
 	printf(1,"@@@@@@@@ %d\n",getpid);
 	for(i=0;i<3;i++)
 	{
@@ -22,7 +26,8 @@ int main ( int argc , char * argv [])
 		printf(1,"parent's pid num is %d\n",getpid());
 	if(child_pid ==0)
 		printf(1,"child's pid num is %d\n",getpid());
-
+	lock_init(lock);
+	printf(1,"lock_test = %d\n",lock->locked);
 	wait();
 	wait();
 	exit ();
