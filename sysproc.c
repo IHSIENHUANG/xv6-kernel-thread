@@ -100,3 +100,8 @@ sys_clone(void)
 		return -1;
 	return clone(stack,size);
 }
+int sys_texit(void)
+{
+	texit();
+	return 0;
+}

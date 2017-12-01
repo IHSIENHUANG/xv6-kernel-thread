@@ -6,7 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-
+static int numofthread =1;
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -20,7 +20,7 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
-void
+  void
 pinit(void)
 {
   initlock(&ptable.lock, "ptable");
@@ -34,14 +34,14 @@ cpuid() {
 
 // Must be called with interrupts disabled to avoid the caller being
 // rescheduled between reading lapicid and running through the loop.
-struct cpu*
+  struct cpu*
 mycpu(void)
 {
   int apicid, i;
-  
+
   if(readeflags()&FL_IF)
     panic("mycpu called with interrupts enabled\n");
-  
+
   apicid = lapicid();
   // APIC IDs are not guaranteed to be contiguous. Maybe we should have
   // a reverse map, or reserve a register to store &cpus[i].
@@ -70,7 +70,7 @@ myproc(void) {
 // If found, change state to EMBRYO and initialize
 // state required to run in the kernel.
 // Otherwise return 0.
-static struct proc*
+  static struct proc*
 allocproc(void)
 {
   struct proc *p;
@@ -117,14 +117,14 @@ found:
 
 //PAGEBREAK: 32
 // Set up first user process.
-void
+  void
 userinit(void)
 {
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
   p = allocproc();
-  
+
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
@@ -155,7 +155,7 @@ userinit(void)
 
 // Grow current process's memory by n bytes.
 // Return 0 on success, -1 on failure.
-int
+  int
 growproc(int n)
 {
   uint sz;
@@ -177,7 +177,7 @@ growproc(int n)
 // Create a new process copying p as the parent.
 // Sets up stack to return as if from system call.
 // Caller must set state of returned proc to RUNNABLE.
-int
+  int
 fork(void)
 {
   int i, pid;
@@ -223,9 +223,10 @@ fork(void)
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait() to find out it exited.
-void
+  void
 exit(void)
 {
+
   struct proc *curproc = myproc();
   struct proc *p;
   int fd;
@@ -256,7 +257,7 @@ exit(void)
     if(p->parent == curproc){
       p->parent = initproc;
       if(p->state == ZOMBIE)
-        wakeup1(initproc);
+	wakeup1(initproc);
     }
   }
 
@@ -264,38 +265,93 @@ exit(void)
   curproc->state = ZOMBIE;
   sched();
   panic("zombie exit");
-}
 
+  /*
+     else
+     { 
+     cprintf("number of thread = %d",numofthread);
+     numofthread = numofthread -1;
+     }
+     */
+}
+  void 
+texit()
+{
+  if(numofthread==1)
+  {
+    struct proc *curproc = myproc();
+    struct proc *p;
+    int fd;
+
+    if(curproc == initproc)
+      panic("init exiting");
+
+
+    for(fd = 0; fd < NOFILE; fd++){
+      if(curproc->ofile[fd]){
+	fileclose(curproc->ofile[fd]);
+	curproc->ofile[fd] = 0;
+      }
+    }
+
+    begin_op();
+    iput(curproc->cwd);
+    end_op();
+    curproc->cwd = 0;
+    
+    acquire(&ptable.lock);
+    //parents mihgt be sleeping in wait
+    wakeup1(curproc->parent);
+    //pass the children to init
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->parent == curproc){
+	p->parent = initproc;
+	if(p->state == ZOMBIE)
+	  wakeup1(initproc);
+      }
+    }
+
+    //jump to the shceduler and never retunr 
+    curproc->state = ZOMBIE;
+    sched();
+    panic("zombie exit");
+  }
+  else
+  {
+    numofthread--;
+    cprintf("num of %d threads lef\nt",numofthread);
+  }
+}
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
-int
+  int
 wait(void)
 {
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-  
+
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
     havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->parent != curproc)
-        continue;
+	continue;
       havekids = 1;
       if(p->state == ZOMBIE){
-        // Found one.
-        pid = p->pid;
-        kfree(p->kstack);
-        p->kstack = 0;
-        freevm(p->pgdir);
-        p->pid = 0;
-        p->parent = 0;
-        p->name[0] = 0;
-        p->killed = 0;
-        p->state = UNUSED;
-        release(&ptable.lock);
-        return pid;
+	// Found one.
+	pid = p->pid;
+	kfree(p->kstack);
+	p->kstack = 0;
+	freevm(p->pgdir);
+	p->pid = 0;
+	p->parent = 0;
+	p->name[0] = 0;
+	p->killed = 0;
+	p->state = UNUSED;
+	release(&ptable.lock);
+	return pid;
       }
     }
 
@@ -318,13 +374,13 @@ wait(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
-void
+  void
 scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -333,7 +389,7 @@ scheduler(void)
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
-        continue;
+	continue;
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -361,7 +417,7 @@ scheduler(void)
 // be proc->intena and proc->ncli, but that would
 // break in the few places where a lock is held but
 // there's no process.
-void
+  void
 sched(void)
 {
   int intena;
@@ -381,7 +437,7 @@ sched(void)
 }
 
 // Give up the CPU for one scheduling round.
-void
+  void
 yield(void)
 {
   acquire(&ptable.lock);  //DOC: yieldlock
@@ -392,7 +448,7 @@ yield(void)
 
 // A fork child's very first scheduling by scheduler()
 // will swtch here.  "Return" to user space.
-void
+  void
 forkret(void)
 {
   static int first = 1;
@@ -413,11 +469,11 @@ forkret(void)
 
 // Atomically release lock and sleep on chan.
 // Reacquires lock when awakened.
-void
+  void
 sleep(void *chan, struct spinlock *lk)
 {
   struct proc *p = myproc();
-  
+
   if(p == 0)
     panic("sleep");
 
@@ -453,7 +509,7 @@ sleep(void *chan, struct spinlock *lk)
 //PAGEBREAK!
 // Wake up all processes sleeping on chan.
 // The ptable lock must be held.
-static void
+  static void
 wakeup1(void *chan)
 {
   struct proc *p;
@@ -464,7 +520,7 @@ wakeup1(void *chan)
 }
 
 // Wake up all processes sleeping on chan.
-void
+  void
 wakeup(void *chan)
 {
   acquire(&ptable.lock);
@@ -475,7 +531,7 @@ wakeup(void *chan)
 // Kill the process with the given pid.
 // Process won't exit until it returns
 // to user space (see trap in trap.c).
-int
+  int
 kill(int pid)
 {
   struct proc *p;
@@ -486,7 +542,7 @@ kill(int pid)
       p->killed = 1;
       // Wake process from sleep if necessary.
       if(p->state == SLEEPING)
-        p->state = RUNNABLE;
+	p->state = RUNNABLE;
       release(&ptable.lock);
       return 0;
     }
@@ -499,16 +555,16 @@ kill(int pid)
 // Print a process listing to console.  For debugging.
 // Runs when user types ^P on console.
 // No lock to avoid wedging a stuck machine further.
-void
+  void
 procdump(void)
 {
   static char *states[] = {
-  [UNUSED]    "unused",
-  [EMBRYO]    "embryo",
-  [SLEEPING]  "sleep ",
-  [RUNNABLE]  "runble",
-  [RUNNING]   "run   ",
-  [ZOMBIE]    "zombie"
+    [UNUSED]    "unused",
+    [EMBRYO]    "embryo",
+    [SLEEPING]  "sleep ",
+    [RUNNABLE]  "runble",
+    [RUNNING]   "run   ",
+    [ZOMBIE]    "zombie"
   };
   int i;
   struct proc *p;
@@ -525,7 +581,7 @@ procdump(void)
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
-        cprintf(" %p", pc[i]);
+	cprintf(" %p", pc[i]);
     }
     cprintf("\n");
   }
@@ -535,42 +591,43 @@ procdump(void)
  * Therefore, file discriptor should be shared 
  * And append new stack on the original stack in address space 
  * */
-int 
+  int 
 clone(void* stack,int size)//BR
 {
-    cprintf("stack %d\n",stack);//original place
-   // cprintf("this is clone %d\n",size);
-    int i,pid;
-    struct proc *newp;//new process and in here is new thread
-    if((newp=allocproc())==0) 
-	return -1;
-    struct proc *curproc = myproc();
-    newp -> pgdir = curproc ->pgdir;
-    newp -> sz  = curproc ->sz; // size of process 
-    newp -> parent = curproc;//parent will be original process
-    *newp -> tf = *curproc -> tf;
-    newp -> thread = 1;
-    newp -> tf -> eax = 0 ;// fork in child will retunr 0 
-    /*
- *in stack esp is the top of stack ebp is the down of the stack 
-  but in memory address, stack grows from top to down
- * */
-    void *down_copy = (void*)curproc->tf->ebp +16;
-    void *top_copy = (void*)curproc->tf->esp;
-    uint copysize = (uint)(down_copy - top_copy);
-    newp->tf->esp = (uint) (stack - copysize);
-    newp->tf->ebp = (uint) (stack -16);
+  numofthread ++;//one clone add one thread
+  cprintf("stack %d\n",stack);//original place
+  // cprintf("this is clone %d\n",size);
+  int i,pid;
+  struct proc *newp;//new process and in here is new thread
+  if((newp=allocproc())==0) 
+    return -1;
+  struct proc *curproc = myproc();
+  newp -> pgdir = curproc ->pgdir;
+  newp -> sz  = curproc ->sz; // size of process 
+  newp -> parent = curproc;//parent will be original process
+  *newp -> tf = *curproc -> tf;
+  newp -> thread = 1;
+  newp -> tf -> eax = 0 ;// fork in child will retunr 0 
+  /*
+   *in stack esp is the top of stack ebp is the down of the stack 
+   but in memory address, stack grows from top to down
+   * */
+  void *down_copy = (void*)curproc->tf->ebp +16;
+  void *top_copy = (void*)curproc->tf->esp;
+  uint copysize = (uint)(down_copy - top_copy);
+  newp->tf->esp = (uint) (stack - copysize);
+  newp->tf->ebp = (uint) (stack -16);
 
-    memmove(stack-copysize,top_copy,copysize);
-    for(i=0;i<NOFILE;i++)
-    {
-	if(curproc->ofile[i])
-		newp->ofile[i]=filedup(curproc->ofile[i]);
-    }    
-    newp->cwd = idup(curproc->cwd);
-    pid = newp->pid;
-    newp->state = RUNNABLE;
-    safestrcpy(newp->name, curproc->name, sizeof(curproc->name));
-   // cprintf("In clone function this is a pid %d\n",pid);
-    return pid;    	
+  memmove(stack-copysize,top_copy,copysize);
+  for(i=0;i<NOFILE;i++)
+  {
+    if(curproc->ofile[i])
+      newp->ofile[i]=filedup(curproc->ofile[i]);
+  }    
+  newp->cwd = idup(curproc->cwd);
+  pid = newp->pid;
+  newp->state = RUNNABLE;
+  safestrcpy(newp->name, curproc->name, sizeof(curproc->name));
+  // cprintf("In clone function this is a pid %d\n",pid);
+  return pid;    	
 }
