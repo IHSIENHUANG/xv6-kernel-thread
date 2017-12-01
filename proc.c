@@ -226,14 +226,11 @@ fork(void)
   void
 exit(void)
 {
-
   struct proc *curproc = myproc();
   struct proc *p;
   int fd;
-
   if(curproc == initproc)
     panic("init exiting");
-
   // Close all open files.
   for(fd = 0; fd < NOFILE; fd++){
     if(curproc->ofile[fd]){
@@ -265,14 +262,6 @@ exit(void)
   curproc->state = ZOMBIE;
   sched();
   panic("zombie exit");
-
-  /*
-     else
-     { 
-     cprintf("number of thread = %d",numofthread);
-     numofthread = numofthread -1;
-     }
-     */
 }
   void 
 texit()

@@ -4,46 +4,57 @@
 #include "thread.h"
 #define DEBUG 0
 struct lock_t *lock;
+static int output =0;
+static int numofthread;
+//static int passnum=0;
+//static pidnum =4;
+void* worker();
 int main ( int argc , char * argv [])
 {
-	int pid;//retrun from clone
-	static int numofthread =10;
-	int size = 4096;
-	int* stack[9];
+	numofthread =10;
 	int i = 0 ;
-	static int output=0;//it's really necessry to use static, since the variable are shared between the threads
-	printf(1,"@@@@@@@@ %d\n",getpid);
-	for(i=0;i<9;i++)
+	lock_init(lock);
+	for(i=0;i<numofthread;i++)
 	{
-		stack[i]  = (int*)malloc(size*sizeof(int));
-		pid = clone(stack[i],size);
-		if(pid==0)//only parent do the copy
-			break;
+		//	stack[i]  = (int*)malloc(size*sizeof(int));
+		thread_create(worker,(void *)0);
+
 	}
+	wait();
+	exit();
 #if DEBUG
 	if(pid >0)
 		printf(1,"parent's pid num is %d\n",getpid());
 	if(pid ==0)
 		printf(1,"child's pid num is %d\n",getpid());
 #endif
-	lock_init(lock);
-	
+
+
 #if DEBUD
 	printf(1,"lock_test = %d\n",lock->locked);
 #endif 
-	lock_acquire(lock);
-		printf(1,"output : %d\n",output);
-		output++;
-	lock_release(lock);
-	numofthread--;
+	/*lock_acquire(lock);
+	  printf(1,"output : %d\n",output);
+	  output++;
+	  numofthread--;
+	  lock_release(lock);	
+	  */
+}
+void* worker()
+{
+	//lock_init(&ttable.lock);
+	printf(1,"child's pid num is %d\n",getpid());
 	while(1)
 	{
-		if(numofthread==0) goto LEAVING;
+		lock_acquire(lock);
+		output++;
+		printf(1,"pass number no:%d is thread %d is passing the token to ",output,getpid());
+		printf(1," %d\n",getpid()+1);
+		lock_release(lock);
+		sleep(5);
 	}
-	LEAVING:
-        //lock_acquire(lock);
-        	printf(1,"time to leave\n");
-		exit();
-	//lock_release(lock);	
-	
+	while(output!=10);
+	printf(1,"time to end\n");
+	exit();
 }
+

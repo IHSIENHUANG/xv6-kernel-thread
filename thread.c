@@ -24,8 +24,15 @@ void lock_release(struct lock_t *lock)
 
 void thread_create(void*(*start_routine)(void*), void *arg)
 {
-	
-;
+	void* newp = malloc(PGSIZE*2);
+	int rc;
+	rc = clone(newp,PGSIZE*2);
+	if(rc==0)
+	{
+		 (*start_routine)(arg);
+		exit();		
+
+	}
 
 }
 void thread_join()
