@@ -514,7 +514,6 @@ procdump(void)
   struct proc *p;
   char *state;
   uint pc[10];
-
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
       continue;
@@ -540,7 +539,7 @@ int
 clone(void* stack,int size)//BR
 {
     cprintf("stack %d\n",stack);//original place
-    cprintf("this is clone %d\n",size);
+   // cprintf("this is clone %d\n",size);
     int i,pid;
     struct proc *newp;//new process and in here is new thread
     if((newp=allocproc())==0) 
@@ -572,9 +571,6 @@ clone(void* stack,int size)//BR
     pid = newp->pid;
     newp->state = RUNNABLE;
     safestrcpy(newp->name, curproc->name, sizeof(curproc->name));
-    cprintf("In clone function this is a pid %d\n",pid);
-    return pid;
-
-    
-    	
+   // cprintf("In clone function this is a pid %d\n",pid);
+    return pid;    	
 }

@@ -13,7 +13,7 @@ void lock_init(struct lock_t *lk)
 {
 	lk -> locked = 0;//initial situation is unlocked
 }
-void lock_acqurie(struct lock_t *lk)
+void lock_acquire(struct lock_t *lk)
 {
 	 while(xchg(&lk->locked,1) != 0);
 }
