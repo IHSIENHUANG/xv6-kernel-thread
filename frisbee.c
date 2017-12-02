@@ -66,15 +66,18 @@ void* worker(void *arg)
 				workpid = 0 ;	
 			printf(1," %d\n",workpid);
 			lock_release(lock);
-			sleep(1);
+		 	sleep(1);
 		}
 		else
 		{
+			//printf(1,"this is not a correct workpid\n");
 			lock_release(lock);
 			sleep(1);
 		}
 	}
+	
 	printf(1,"time to end\n");
 	exit();
+	
 }
 

@@ -393,6 +393,7 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
+       
     }
     release(&ptable.lock);
 
@@ -584,7 +585,7 @@ procdump(void)
 clone(void* stack,int size)//BR
 {
   numofthread ++;//one clone add one thread
-  cprintf("stack %d\n",stack);//original place
+ // cprintf("stack %d\n",stack);//original place
   // cprintf("this is clone %d\n",size);
   int i,pid;
   struct proc *newp;//new process and in here is new thread
@@ -600,13 +601,16 @@ clone(void* stack,int size)//BR
   /*
    *in stack esp is the top of stack ebp is the down of the stack 
    but in memory address, stack grows from top to down
-   * */
+   *
+   *  */
+   
   void *down_copy = (void*)curproc->tf->ebp +16;
   void *top_copy = (void*)curproc->tf->esp;
+ // cprintf("esp :%d ebp %d\n",top_copy,down_copy);
   uint copysize = (uint)(down_copy - top_copy);
   newp->tf->esp = (uint) (stack - copysize);
   newp->tf->ebp = (uint) (stack -16);
-
+  cprintf("new stack esp %d edp: %d\n",newp->tf->esp,newp->tf->ebp);
   memmove(stack-copysize,top_copy,copysize);
   for(i=0;i<NOFILE;i++)
   {
