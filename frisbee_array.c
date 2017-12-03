@@ -9,18 +9,21 @@ it will directly checht int the aquire
 #include "thread.h"
 #define DEBUG 0
 struct lock_t *lock;
-static int output =0;
+//static int output =0;
 static int numofthread;
 static int passnum;
-static int workpid=0;//this time should be no workpid's time to work
+//static int workpid=0;//this time should be no workpid's time to work
 void* worker();
 int main ( int argc , char * argv [])
 {
         numofthread =atoi(argv[1]);// num of threads is decided by the parameter passed by user
         passnum = atoi(argv[2]);
         int i = 0 ;
-        lock_init(lock);
-        for(i=0;i<numofthread;i++)
+	int *flag = malloc(numofthread*sizeof(int));
+	printf(1,"DEBUG\n");
+        array_lock_init(lock,&flag[0]);
+	printf(1,"DEBUG2\n");
+        for(i=numofthread;i<numofthread;i++)
         {
                 //      stack[i]  = (int*)malloc(size*sizeof(int));
                 thread_create(worker,(void *)i);
@@ -41,11 +44,11 @@ void* worker(void *arg)
 {
 
         //lock_init(&ttable.lock);
-        int pidnum = (int)arg;
+        //int pidnum = (int)arg;
 #if DEBUG
         printf(1,"child's pid num is %d\n",pidnum);
 #endif
-        while(output<passnum)//when pass time  bigger than it should be passed
+        /*while(output<passnum)//when pass time  bigger than it should be passed
         {
                 array_lock_acquire(lock);
                 if(output==passnum)
@@ -68,6 +71,7 @@ void* worker(void *arg)
                         sleep(1);
                 }
         }
+	*/
         printf(1,"time to end\n");
         exit();
 }

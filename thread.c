@@ -57,8 +57,15 @@ void thread_create(void*(*start_routine)(void*), void *arg)
 
 }
 //this park is for array base queue lock
-
-void array_lock_acquire(struct lock_t *lk)
+void array_lock_init(struct lock_t *lk,int* flag)
+{
+	lk->locked=0;
+	int i =0;
+	for(i=0;i<20;i++)
+		flag[i]=0;
+	flag[0]=1;
+}
+void array_lock_acquire(struct lock_t *lk,int* flag)
 {
 	 while( xchg(&lk->locked,++num));
 	/*
@@ -75,7 +82,7 @@ void array_lock_acquire(struct lock_t *lk)
 	*/
 
 }
-void array_lock_release(struct lock_t *lk)
+void array_lock_release(struct lock_t *lk,int* flag)
 {
 	
 }
