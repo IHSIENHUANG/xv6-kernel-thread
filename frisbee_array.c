@@ -27,18 +27,6 @@ int main ( int argc , char * argv [])
         }
         wait();
         exit();
-#if DEBUG
-        if(pid >0)
-                printf(1,"parent's pid num is %d\n",getpid());
-        if(pid ==0)
-                printf(1,"child's pid num is %d\n",getpid());
-#endif
-
-
-#if DEBUD
-        printf(1,"lock_test = %d\n",lock->locked);
-#endif
-
 }
 /*worker is thr function passed into the threads
  * each thread after created will do the function
@@ -59,7 +47,7 @@ void* worker(void *arg)
 #endif
         while(output<passnum)//when pass time  bigger than it should be passed
         {
-                lock_acquire(lock);
+                array_lock_acquire(lock);
                 if(output==passnum)
                         break;
                 if(pidnum==workpid)
@@ -80,9 +68,7 @@ void* worker(void *arg)
                         sleep(1);
                 }
         }
-
         printf(1,"time to end\n");
         exit();
-
 }
 

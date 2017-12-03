@@ -175,6 +175,8 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_frisbee\
+	_frisbee_array\
+
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

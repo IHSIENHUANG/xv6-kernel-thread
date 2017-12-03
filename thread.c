@@ -7,10 +7,12 @@
 //#define PGSIZE (4096)
 #define DEBUG 0
 #define TEST 0 
+static int num =0;
 int test()
 {
 	return PGSIZE;
 }
+//this part is for spin lock
 void lock_init(struct lock_t *lk)
 {
 	lk -> locked = 0;//initial situation is unlocked
@@ -53,6 +55,29 @@ void thread_create(void*(*start_routine)(void*), void *arg)
 
 	}
 
+}
+//this park is for array base queue lock
+
+void array_lock_acquire(struct lock_t *lk)
+{
+	 while( xchg(&lk->locked,++num));
+	/*
+        {
+                int atomic = xchg(&lk->locked,++num);
+                if(atomic!=0)
+                {
+                     //   printf(1,"atomic number is %d\n",atomic);
+                        break;
+                }
+                
+                       // printf(1,"fail atomic number is %d\n",atomic);
+        }
+	*/
+
+}
+void array_lock_release(struct lock_t *lk)
+{
+	
 }
 void thread_join()
 {

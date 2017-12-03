@@ -46,3 +46,7 @@ void thread_join();
 void lock_init(struct lock_t *);
 void lock_acquire(struct lock_t *);
 void lock_release(struct lock_t *);
+//for array base lock
+void array_lock_acquire(struct lock_t *);
+void array_lock_release(struct lock_t *);
+
