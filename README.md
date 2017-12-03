@@ -7,6 +7,8 @@ it means each thread should keep trying to get the lock resource. <br>
 And the thread get the resource still need to check whether it should work this round.<br>
 * thread.c : store the library about lock_init, lock_create, lock_release, lock_create().<br>
 ## Array-based queue lock
+Ref:https://en.wikipedia.org/wiki/Array_Based_Queuing_Locks <br>
+* Each thread waits in a while loop with a ticket, until the flag[ticket]!=MUSt_WAIT <br>
 * frisbee_array.c <br>
 * thread.c <br>
 
