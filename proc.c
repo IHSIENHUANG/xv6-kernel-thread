@@ -610,7 +610,7 @@ clone(void* stack,int size)//BR
   uint copysize = (uint)(down_copy - top_copy);
   newp->tf->esp = (uint) (stack - copysize);
   newp->tf->ebp = (uint) (stack -16);
-  cprintf("new stack esp %d edp: %d\n",newp->tf->esp,newp->tf->ebp);
+ // cprintf("new stack esp %d edp: %d\n",newp->tf->esp,newp->tf->ebp);
   memmove(stack-copysize,top_copy,copysize);
   for(i=0;i<NOFILE;i++)
   {
