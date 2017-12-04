@@ -71,8 +71,8 @@ int array_lock_acquire(struct lock_t *lk,int* flag,int id)
 		//xchg(&lk->locked,0);
 		//printf(1,"id %d is finished\n",id);
 //		printf(1,"right place num is %d\n",ticket);
-	//	if(num<=60)
-	//	printf(1,"pass no :%d thread %d is pass the token ot thread %d\n",num,ticket,ticket+1);
+		//if(num<=60)
+		//	printf(1,"pass no :%d thread %d is pass the token ot thread %d\n",num,ticket,ticket+1);
 		return ticket ;//right thread get the resource
 	}
 
@@ -96,21 +96,22 @@ void seqlock_init(struct lock_t *lk)
 int reader(struct lock_t *lk,int pidnum)
 {
 	int r1=0;
-	int seq0=0,seq1=0;
+	int sequence=0,seq1=0;
 	do{
-		seq0= SEQ;
+		sequence= SEQ;
 		r1=DATA;
 		seq1= SEQ;
 		sleep(1);
 		if(WORKNUM==pidnum)
 		{
-			if(SEQ%2==0)
+			if(((seq1%2)==0) && seq1 ==SEQ)
 			{
-				if((seq0) == (seq1))
+				if((sequence) == (seq1))
+				{
 					break;
+				}
 			}
 		}
-
 	}while( 1 );//odd means writer do the work
 	SEQ++;//make it become odd again and it turns to writer time
 	WORKNUM++;

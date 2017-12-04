@@ -45,32 +45,20 @@ int main ( int argc , char * argv [])
 void* worker(void *arg)
 {
 
-        //lock_init(&ttable.lock);
+       
         int pidnum = (int)arg;
 	//printf(1,"pid num is %d\n",pidnum);
 	int ticket =0 ;
         while(output<passnum)//when pass time  bigger than it should be passed
         {
                 ticket=array_lock_acquire(lock,&flag[0],pidnum);
-		printf(1,"ticket is %d\n",ticket);
-                if(ticket>=passnum)
-                        break;
                 if(ticket>=0)//means correct thread get the ticket
                 {
 			output++;
-			if(ticket>=60)
-			break;
-			//printf(1,"pid %d do the right thing\n",pidnum);
-			/*
-                        output++;
-                        printf(1,"pass number no:%d is thread %d is passing the token to ",output,ticket);
-                        workpid=ticket+1;
-                        if(workpid ==  numofthread)// because thread num is start from 0
-                                workpid = 0 ;
-                        printf(1," %d\n",workpid);
-                        array_lock_release(ticket,lock,&flag[0]);
-                        sleep(1);
-			*/
+			int nextoken = ((pidnum+1==20)?0:pidnum+1);		
+			printf(1,"pass number is no:%d thread %d is passing the token to thread %d\n",output,pidnum,nextoken);
+			if(output>=60)
+				break;
 			array_lock_release(ticket,lock,&flag[0]);
                 }
                 else
