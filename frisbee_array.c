@@ -52,6 +52,7 @@ void* worker(void *arg)
         while(output<passnum)//when pass time  bigger than it should be passed
         {
                 ticket=array_lock_acquire(lock,&flag[0],pidnum);
+		printf(1,"ticket is %d\n",ticket);
                 if(ticket>=passnum)
                         break;
                 if(ticket>=0)//means correct thread get the ticket
