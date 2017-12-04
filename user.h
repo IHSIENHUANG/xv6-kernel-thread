@@ -50,3 +50,7 @@ void lock_release(struct lock_t *);
 int array_lock_acquire(struct lock_t *,int*,int);//even if get acquire return value will check wheher the right thread
 void array_lock_release(int,struct lock_t *,int*);
 void array_lock_init(struct lock_t*,int*);
+//for seqlock
+void seqlock_init(struct lock_t *);
+int reader(struct lock_t*,int);
+void seqlock_writer(struct lock_t*);

@@ -7,7 +7,10 @@
 //#define PGSIZE (4096)
 #define DEBUG 0
 #define TEST 0 
-static int num =1;
+static int num =0;
+static int SEQ =0;
+//static int WORKNUM =0;
+static int DATA=1;
 int test()
 {
 	return PGSIZE;
@@ -61,28 +64,32 @@ void array_lock_init(struct lock_t *lk,int* flag)
 {
 	lk->locked=0;
 	int i =0;
-	for(i=0;i<20;i++)
+	for(i=0;i<600;i++)
 		flag[i]=0;
-	flag[1]=1;
+	flag[0]=1;
 }
 int array_lock_acquire(struct lock_t *lk,int* flag,int id)
 {
-	while( xchg(&lk->locked,num));
+	while( xchg(&lk->locked,1));
 	num++;
-	printf(1,"number is %d\n",num%20);
-	if(((num)%20)!=id)
+	//printf(1,"number is %d\n",num);
+	if(((num-1)%20)!=id)
 	{
+		
 	 	num--;
-		xchg(&lk->locked,0);
+		//printf(1,"id %d in wrong place num is %d\n",id,num);
 		return -1;
 	}
 	else
 	{
-		int ticket = (num)%20;//thread 0~numofthread ticket 1~
+		int ticket = (num-1)%20;//thread 0~numofthread ticket 1~
 		//printf(1,"id %d is waiting \n",id); 
-		while(flag[id]==0);
-		xchg(&lk->locked,0);
+		while(flag[ticket]==0);
+		//xchg(&lk->locked,0);
 		//printf(1,"id %d is finished\n",id);
+//		printf(1,"right place num is %d\n",ticket);
+		if(num<=60)
+		printf(1,"pass no :%d thread %d is pass the token ot thread %d\n",num,ticket,ticket+1);
 		return ticket ;//right thread get the resource
 	}
 
@@ -90,14 +97,45 @@ int array_lock_acquire(struct lock_t *lk,int* flag,int id)
 }
 void array_lock_release(int ticket,struct lock_t *lk,int* flag)
 {
-	//xchg(&lk->locked,0);
+	xchg(&lk->locked,0);
 	flag[ticket]=0;
 	int nextone = ticket+1;
-	if(nextone ==20) nextone=0;
+	//if(nextone ==20) nextone=0;
 	flag[nextone]=1;
-	printf(1,"next start is %d\n",nextone);
+	//printf(1,"next start is %d\n",nextone);
 }
-void thread_join()
+//this part is for seq_lock
+void seqlock_init(struct lock_t *lk)
 {
+	lk->locked=1;
+}
+
+int reader(struct lock_t *lk,int pidnum)
+{
+	
+	//int r1=0;
+	//int seq_0=0,seq_1=0;
+	//printf(1,"%d %d\n",seq_0,seq_1);
+	/*do{
+		seq0= SEQ;
+		r1=DATA;
+		seq1= SEQ;
+	}while(  (seq0!=seq1) || (seq0%2!=0));//odd means writer do the work
+	//printf(1,"pass num no :%d, thread %d is pass token to thread %d\n",r1,pidnum,pidnum+1);
+	//SEQ++;//make it become odd again and it turns to writer time
+	//WORKNUM++;
+	//if(WORKNUM==20)	WORKNUM=0;
+//	xchg(&lk->locked,0);
+	*/
+	return 1;
+	
+}
+void seqlock_writer(struct lock_t *lk)
+{
+	printf(1,"num is %d %d\n",SEQ,DATA);
+	xchg(&lk->locked,SEQ);
+	DATA++;
+	SEQ++;
 
 }
+
