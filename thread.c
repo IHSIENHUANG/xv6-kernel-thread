@@ -8,9 +8,9 @@
 #define DEBUG 0
 #define TEST 0 
 static int num =0;
-static int SEQ =0;
-//static int WORKNUM =0;
-static int DATA=1;
+static int SEQ =1;
+static int WORKNUM =0;
+static int DATA=0;
 int test()
 {
 	return PGSIZE;
@@ -23,23 +23,6 @@ void lock_init(struct lock_t *lk)
 void lock_acquire(struct lock_t *lk)
 {
 	while(xchg(&lk->locked,1) != 0);
-    #if TEST
-	while(1)
-	{
-		int atomic = xchg(&lk->locked,2);
-		if(atomic!=0)
-		{
-		#if DEBUG
-			printf(1,"atomic number is %d\n",atomic);
-		#endif
-			break;
-		}
-		#if DEBUG
-		else
-			printf(1,"fail atomic number is %d\n",atomic);
-		#endif
-	}
-    #endif
 }
 void lock_release(struct lock_t *lock)
 {
@@ -88,8 +71,8 @@ int array_lock_acquire(struct lock_t *lk,int* flag,int id)
 		//xchg(&lk->locked,0);
 		//printf(1,"id %d is finished\n",id);
 //		printf(1,"right place num is %d\n",ticket);
-		if(num<=60)
-		printf(1,"pass no :%d thread %d is pass the token ot thread %d\n",num,ticket,ticket+1);
+	//	if(num<=60)
+	//	printf(1,"pass no :%d thread %d is pass the token ot thread %d\n",num,ticket,ticket+1);
 		return ticket ;//right thread get the resource
 	}
 
@@ -107,35 +90,40 @@ void array_lock_release(int ticket,struct lock_t *lk,int* flag)
 //this part is for seq_lock
 void seqlock_init(struct lock_t *lk)
 {
-	lk->locked=1;
+	lk->locked=0;
 }
 
 int reader(struct lock_t *lk,int pidnum)
 {
-	
-	//int r1=0;
-	//int seq_0=0,seq_1=0;
-	//printf(1,"%d %d\n",seq_0,seq_1);
-	/*do{
+	int r1=0;
+	int seq0=0,seq1=0;
+	do{
 		seq0= SEQ;
 		r1=DATA;
 		seq1= SEQ;
-	}while(  (seq0!=seq1) || (seq0%2!=0));//odd means writer do the work
-	//printf(1,"pass num no :%d, thread %d is pass token to thread %d\n",r1,pidnum,pidnum+1);
-	//SEQ++;//make it become odd again and it turns to writer time
-	//WORKNUM++;
-	//if(WORKNUM==20)	WORKNUM=0;
-//	xchg(&lk->locked,0);
-	*/
-	return 1;
+		sleep(1);
+		if(WORKNUM==pidnum)
+		{
+			if(SEQ%2==0)
+			{
+				if((seq0) == (seq1))
+					break;
+			}
+		}
+
+	}while( 1 );//odd means writer do the work
+	SEQ++;//make it become odd again and it turns to writer time
+	WORKNUM++;
+	if(WORKNUM==20)
+		WORKNUM=0;
+	return r1;
 	
 }
 void seqlock_writer(struct lock_t *lk)
 {
-	printf(1,"num is %d %d\n",SEQ,DATA);
-	xchg(&lk->locked,SEQ);
+	while(xchg(&lk->locked,1)!=0);
 	DATA++;
 	SEQ++;
-
+//	printf(1,"SEQ = %d",SEQ);
 }
 
