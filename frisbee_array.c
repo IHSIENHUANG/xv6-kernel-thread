@@ -12,7 +12,7 @@ struct lock_t *lock;
 static int output =0;
 static int numofthread;
 static int passnum;
-static int workpid=0;//this time should be no workpid's time to work
+//static int workpid=0;//this time should be no workpid's time to work
 static int *flag ;
 void* worker();
 int main ( int argc , char * argv [])
@@ -20,7 +20,7 @@ int main ( int argc , char * argv [])
         numofthread =atoi(argv[1]);// num of threads is decided by the parameter passed by user
         passnum = atoi(argv[2]);
         int i = 0 ;
-	int *flag = malloc((numofthread)*sizeof(int));//flag should be 1-20 not 0->19
+	int *flag = malloc((600)*sizeof(int));//flag should be 1-20 not 0->19
 	printf(1,"DEBUG\n");
         array_lock_init(lock,&flag[0]);
         for(i=0;i<numofthread;i++)
@@ -28,7 +28,9 @@ int main ( int argc , char * argv [])
                 //      stack[i]  = (int*)malloc(size*sizeof(int));
                 thread_create(worker,(void *)i);
         }
-        wait();
+//	sleep(100);
+//        wait();
+	wait();
         exit();
 }
 /*worker is thr function passed into the threads
@@ -45,16 +47,20 @@ void* worker(void *arg)
 
         //lock_init(&ttable.lock);
         int pidnum = (int)arg;
-#if DEBUG
-        printf(1,"child's pid num is %d\n",pidnum);
-#endif
+	//printf(1,"pid num is %d\n",pidnum);
+	int ticket =0 ;
         while(output<passnum)//when pass time  bigger than it should be passed
         {
-                int ticket=array_lock_acquire(lock,&flag[0],pidnum);
-                if(output==passnum)
+                ticket=array_lock_acquire(lock,&flag[0],pidnum);
+                if(ticket>=passnum)
                         break;
                 if(ticket>=0)//means correct thread get the ticket
                 {
+			output++;
+			if(ticket>=60)
+			break;
+			//printf(1,"pid %d do the right thing\n",pidnum);
+			/*
                         output++;
                         printf(1,"pass number no:%d is thread %d is passing the token to ",output,ticket);
                         workpid=ticket+1;
@@ -63,11 +69,13 @@ void* worker(void *arg)
                         printf(1," %d\n",workpid);
                         array_lock_release(ticket,lock,&flag[0]);
                         sleep(1);
+			*/
+			array_lock_release(ticket,lock,&flag[0]);
                 }
                 else
                 {
                         //printf(1,"this is not a correct workpid\n");
-                        //lock_release(lock);
+                        lock_release(lock);
                         sleep(1);
                 }
         }
