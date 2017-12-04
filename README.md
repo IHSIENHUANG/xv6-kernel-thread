@@ -11,5 +11,9 @@ Ref:https://en.wikipedia.org/wiki/Array_Based_Queuing_Locks <br>
 * Each thread waits in a while loop with a ticket, until the flag[ticket]!=MUSt_WAIT <br>
 * frisbee_array.c <br>
 * thread.c <br>
+## seqlock
+* reader() and writer() <br>
+* frisbee_seqlock.c<br>
+* reader(struct lock_t*,int),writer(struct lock_t*)<br>
 
 
