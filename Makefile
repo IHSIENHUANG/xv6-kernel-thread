@@ -176,7 +176,7 @@ UPROGS=\
 	_zombie\
 	_frisbee\
 	_frisbee_array\
-        
+        _frisbee_seqlock\
 
 
 fs.img: mkfs README $(UPROGS)
