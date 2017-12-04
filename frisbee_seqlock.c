@@ -1,7 +1,7 @@
 /*
-   this time use atomic operation to implement the array bese lock
-   Therefore, we do not need to check in the function
-   it will directly checht int the aquire
+   this time use atomic operation to implement seqlokc
+   reader always read until the writer finished 
+   therefore it will improve the performance for the reason that reader do not stuck on the spinlock 
    */
 #include "types.h"
 #include "stat.h"
